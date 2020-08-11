@@ -1,7 +1,6 @@
 #include <Windows.h>
 #include <gl/GL.h>
-
-#pragma comment (lib, "OpenGL32.lib")
+#include <gl/GLU.h>
 
 #define WINDOW_TITLE "BACS2173 Assignment"
 
@@ -84,7 +83,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE, LPSTR, int nCmdShow)
 	if (!RegisterClassEx(&wc)) return false;
 
 	HWND hWnd = CreateWindow(WINDOW_TITLE, WINDOW_TITLE, WS_OVERLAPPEDWINDOW,
-		CW_USEDEFAULT, CW_USEDEFAULT, 800, 600,
+		CW_USEDEFAULT, CW_USEDEFAULT, 1920, 1080,
 		NULL, NULL, wc.hInstance, NULL);
 
 	//--------------------------------
