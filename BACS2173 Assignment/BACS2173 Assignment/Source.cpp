@@ -22,16 +22,20 @@ LRESULT WINAPI WindowProcedure(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
 			PostQuitMessage(0);
 		}
 		else if (wParam == VK_LEFT) {
-			rotateX += 10;
+			rotateX += 5;
 		}
 		else if (wParam == VK_RIGHT) {
-			rotateX -= 10;
+			rotateX -= 5;
 		}
 		else if (wParam == VK_DOWN) {
-			rotateY -= 10;
+			rotateY -= 5;
 		}
 		else if (wParam == VK_UP) {
-			rotateY += 10;
+			rotateY += 5;
+		}
+		else if (wParam == VK_SPACE) {
+			rotateX = 0;
+			rotateY = 0;
 		}
 
 	default:
@@ -134,38 +138,60 @@ void Head() {
 	glColor3f(0.47, 0.471, 0.47);
 	gluSphere(sphere, 0.2, 200, 200);
 
-	////Top
-	//glPushMatrix();
-	//glTranslatef(0, 0.175, 0);
-	//glRotatef(45, 0, 0, 1);
-	//glTranslatef(-0, -0.175, 0);
-	//drawCuboid(0.84, 0.831, 0.815, 0, 0.175, -0.25, 0.15, 0.15, 0.3);
-	//glPopMatrix();
+	//Eye
+	glPushMatrix();
+	glTranslatef(0.07, -0.02, 0);
+	glRotatef(-10, 1, 0, 0);
+	glRotatef(45, 0, 1, 0);
+	glTranslatef(-0.07, 0.02, 0);
+	drawCuboid(0, 1, 0, 0.07, -0.02, -0.25, 0.15, 0.02, 0.30);
+	glPopMatrix();
 
-	////Bottom Left
-	//glPushMatrix();
-	//glTranslatef(-0.2, 0, 0);
-	//glRotatef(45, 0, 0, 1);
-	//glTranslatef(0.2, -0, 0);
-	//drawCuboid(0.84, 0.831, 0.815, -0.2, -0.05, -0.25, 0.08, 0.05, 0.1);
-	//glPopMatrix();
-
-	////Bottom Left
-	//glPushMatrix();
-	//glTranslatef(0.2, 0, 0);
-	//glRotatef(315, 0, 0, 1);
-	//glTranslatef(-0.2, -0, 0);
-	//drawCuboid(0.84, 0.831, 0.815, 0.2, -0.05, -0.25, 0.08, 0.12, 0.1);
-	//glPopMatrix();
+	//Top
+	glPushMatrix();
+	glTranslatef(0.14, 0.08, 0);
+	glRotatef(-10, 1, 0, 0);
+	glRotatef(45, 0, 1, 0);
+	glTranslatef(-0.14, -0.08, 0);
+	drawCuboid(0.84, 0.831, 0.815, 0.14, 0.08, -0.35, 0.15, 0.08, 0.30);
+	glPopMatrix();
 
 	//Bottom
 	glPushMatrix();
-	glTranslatef(0, 0, 0);
+	glTranslatef(0.07, -0.12, 0);
+	glRotatef(-10, 1, 0, 0);
 	glRotatef(45, 0, 1, 0);
-	glRotatef(90, 1, 0, 0);
-	glTranslatef(-0, -0, 0);
-	drawCuboid(0.84, 0.831, 0.815, 0, 0, -0.25, 0.15, 0.15, 0.2);
+	glTranslatef(-0.07, 0.12, 0);
+	drawCuboid(0.84, 0.831, 0.815, 0.07, -0.12, -0.25, 0.15, 0.08, 0.30);
 	glPopMatrix();
+
+	//Top : Middle Diamond
+	glPushMatrix();
+	glTranslatef(0, 0.22, 0);
+	glRotatef(-10, 1, 0, 0);
+	glRotatef(45, 0, 0, 1);
+	glTranslatef(-0, -0.22, 0);
+	drawCuboid(0.84, 0.831, 0.815, 0, 0.22, -0.4, 0.15, 0.15, 0.15);
+	glPopMatrix();
+
+	//Top : Left Diamond
+	glPushMatrix();
+	glTranslatef(-0.21, 0.15, 0);
+	glRotatef(-10, 1, 0, 0);
+	glRotatef(45, 0, 0, 1);
+	glTranslatef(0.21, -0.15, 0);
+	drawCuboid(0.84, 0.831, 0.815, -0.21, 0.15, -0.37, 0.05, 0.05, 0.35);
+	glPopMatrix();
+
+	//Top : Right Diamond
+	glPushMatrix();
+	glTranslatef(0.21, 0.15, 0);
+	glRotatef(-10, 1, 0, 0);
+	glRotatef(45, 0, 0, 1);
+	glTranslatef(-0.21, -0.15, 0);
+	drawCuboid(0.84, 0.831, 0.815, 0.21, 0.15, -0.37, 0.05, 0.05, 0.35);
+	glPopMatrix();
+
 }
 
 void display()
