@@ -5,9 +5,29 @@
 #pragma comment (lib, "OpenGL32.lib")
 #pragma comment (lib, "GLU32.lib")
 
-#define WINDOW_TITLE "BACS2173 Assignment"
+#define WINDOW_TITLE "BACS2173 Assignment" //Nicholas Lee Hong Quan & Lee Jia Shin
+#define GLU_LINE 100011
+#define GLU_FILL 100012
+#define GLU_POINT 100013
 
-double rotateX = 0.0, rotateY = 0.0;
+float tZ = 0.0, tSpeed = 1.0, rY = 0.0, rX = 0.0, rSpeed = 3.0;
+bool isOrtho = true;
+
+float amb[] = { 0.0, 0.0, 1.0 }; //Ambient light
+float posA[] = { 0.0, 1.0, 0.0 }; //Position for ambient
+
+float dif[] = { 0.0, 1.0, 0.0 }; //Diffuse light
+float posD[] = { 1.0, 1.0, 0.0 }; //Position for diffuse
+
+float ambM[] = { 1.0, 0.0, 0.0 }; //Ambient material
+float difM[] = { 1.0, 0.0, 0.0 }; //Diffuse material
+
+bool isLightOn = false;
+
+BITMAP BMP;				//Bitmap structure
+HBITMAP hBMP = NULL;	//Bitmap handle
+
+float speed = 0.1;
 
 LRESULT WINAPI WindowProcedure(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -22,21 +42,60 @@ LRESULT WINAPI WindowProcedure(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
 			PostQuitMessage(0);
 		}
 		else if (wParam == VK_LEFT) {
-			rotateX += 5;
+			rY += rSpeed;
 		}
 		else if (wParam == VK_RIGHT) {
-			rotateX -= 5;
+			rY -= rSpeed;
 		}
 		else if (wParam == VK_DOWN) {
-			rotateY -= 5;
+			rX -= rSpeed;
 		}
 		else if (wParam == VK_UP) {
-			rotateY += 5;
+			rX += rSpeed;
 		}
 		else if (wParam == VK_SPACE) {
-			rotateX = 0;
-			rotateY = 0;
+			rX = 0.0;
+			rY = 0.0;
+			tZ = 0.0;
 		}
+		else if (wParam == 'O') { //Change to Orthographic
+			isOrtho = true;
+			tZ = 0.0;
+			rY = 0.0;
+		}
+		else if (wParam == 'P') { //Change to Perspective
+			isOrtho = false;
+			tZ = 4.0;
+			rY = 0.0;
+		}
+		else if (wParam == 'U') { //Zoom out
+			if (isOrtho) {
+				if (tZ < 8.0) {
+					tZ += tSpeed;
+				}
+			}
+			else {
+				if (tZ < 14.0) {
+					tZ += tSpeed;
+				}
+			}
+		}
+		else if (wParam == 'I') { //Zoom in
+			if (isOrtho) {
+				if (tZ > -8.0) {
+					tZ -= tSpeed;
+				}
+			}
+			else {
+				if (tZ > 4.0) {
+					tZ -= tSpeed;
+				}
+			}
+		}
+		else if (wParam == 'L') {
+			isLightOn = !isLightOn;
+		}
+		break;
 
 	default:
 		break;
@@ -78,65 +137,207 @@ bool initPixelFormat(HDC hdc)
 }
 //--------------------------------------------------------------------
 
-void drawCuboid(double r, double g, double b, double x, double y, double z, double dx, double dy, double w) {
+void drawCuboid(float r, float g, float b, float x, float y, float z, float dx, float dy, float w) {
 	glColor3f(r, g, b);
 
 	//Face 1: Front
 	glBegin(GL_LINE_LOOP);
-		glVertex3f(x-dx, y+dy, z);
-		glVertex3f(x-dx, y-dy, z);
-		glVertex3f(x+dx, y-dy, z);
-		glVertex3f(x+dx, y+dy, z);
+	glTexCoord2f(0.0f, 1.0f);
+	glVertex3f(x - dx, y + dy, z);
+	glTexCoord2f(0.0f, 0.0f);
+	glVertex3f(x - dx, y - dy, z);
+	glTexCoord2f(1.0f, 0.0f);
+	glVertex3f(x + dx, y - dy, z);
+	glTexCoord2f(1.0f, 1.0f);
+	glVertex3f(x + dx, y + dy, z);
 	glEnd();
 
 	//Face 2: Right
 	glBegin(GL_LINE_LOOP);
-		glVertex3f(x+dx, y+dy, z);
-		glVertex3f(x+dx, y-dy, z);
-		glVertex3f(x+dx, y-dy, z+w);
-		glVertex3f(x+dx, y+dy, z+w);
+	glTexCoord2f(0.0f, 1.0f);
+	glVertex3f(x + dx, y + dy, z);
+	glTexCoord2f(0.0f, 0.0f);
+	glVertex3f(x + dx, y - dy, z);
+	glTexCoord2f(1.0f, 0.0f);
+	glVertex3f(x + dx, y - dy, z + w);
+	glTexCoord2f(1.0f, 1.0f);
+	glVertex3f(x + dx, y + dy, z + w);
 	glEnd();
 
 	//Face 3: Rear
 	glBegin(GL_LINE_LOOP);
-		glVertex3f(x+dx, y+dy, z+w);
-		glVertex3f(x+dx, y-dy, z+w);
-		glVertex3f(x-dx, y-dy, z+w);
-		glVertex3f(x-dx, y+dy, z+w);
+	glTexCoord2f(0.0f, 1.0f);
+	glVertex3f(x + dx, y + dy, z + w);
+	glTexCoord2f(0.0f, 0.0f);
+	glVertex3f(x + dx, y - dy, z + w);
+	glTexCoord2f(1.0f, 0.0f);
+	glVertex3f(x - dx, y - dy, z + w);
+	glTexCoord2f(1.0f, 1.0f);
+	glVertex3f(x - dx, y + dy, z + w);
 	glEnd();
 
 	//Face 4: Top
 	glBegin(GL_LINE_LOOP);
-		glVertex3f(x-dx, y+dy, z+w);
-		glVertex3f(x+dx, y+dy, z+w);
-		glVertex3f(x+dx, y+dy, z);
-		glVertex3f(x-dx, y+dy, z);
+	glTexCoord2f(0.0f, 1.0f);
+	glVertex3f(x - dx, y + dy, z + w);
+	glTexCoord2f(0.0f, 0.0f);
+	glVertex3f(x + dx, y + dy, z + w);
+	glTexCoord2f(1.0f, 0.0f);
+	glVertex3f(x + dx, y + dy, z);
+	glTexCoord2f(1.0f, 1.0f);
+	glVertex3f(x - dx, y + dy, z);
 	glEnd();
 
 	//Face 5: Left
 	glBegin(GL_LINE_LOOP);
-		glVertex3f(x-dx, y+dy, z);
-		glVertex3f(x-dx, y+dy, z+w);
-		glVertex3f(x-dx, y-dy, z+w);
-		glVertex3f(x-dx, y-dy, z);
+	glTexCoord2f(0.0f, 1.0f);
+	glVertex3f(x - dx, y + dy, z);
+	glTexCoord2f(0.0f, 0.0f);
+	glVertex3f(x - dx, y + dy, z + w);
+	glTexCoord2f(1.0f, 0.0f);
+	glVertex3f(x - dx, y - dy, z + w);
+	glTexCoord2f(1.0f, 1.0f);
+	glVertex3f(x - dx, y - dy, z);
 	glEnd();
 
 	//Face 6: Bottom
 	glBegin(GL_LINE_LOOP);
-		glVertex3f(x-dx, y-dy, z);
-		glVertex3f(x-dx, y-dy, z+w);
-		glVertex3f(x+dx, y-dy, z+w);
-		glVertex3f(x+dx, y-dy, z);
+	glTexCoord2f(0.0f, 1.0f);
+	glVertex3f(x - dx, y - dy, z);
+	glTexCoord2f(0.0f, 0.0f);
+	glVertex3f(x - dx, y - dy, z + w);
+	glTexCoord2f(1.0f, 0.0f);
+	glVertex3f(x + dx, y - dy, z + w);
+	glTexCoord2f(1.0f, 1.0f);
+	glVertex3f(x + dx, y - dy, z);
 	glEnd();
 }
 
-void Head() {
-	GLUquadricObj* sphere = NULL;
-	sphere = gluNewQuadric();
-	
+void drawPyramid(float r, float g, float b, float x, float y, float z, float dx, float dy, float w) {
+	glColor3f(r, g, b);
+
+	//Face 1 : Front
+	glBegin(GL_LINE_LOOP); //Change to triangle
+		glVertex3f(x, y+dy, z+(w/2));
+		glVertex3f(x-dx, y-dy, z);
+		glVertex3f(x+dx, y-dy, z);
+	glEnd();
+
+	//Face 2 : Right
+	glBegin(GL_LINE_LOOP);
+		glVertex3f(x, y+dy, z+(w/2));
+		glVertex3f(x+dx, y-dy, z);
+		glVertex3f(x+dx, y-dy, z+w);
+	glEnd();
+
+	//Face 3 : Rear
+	glBegin(GL_LINE_LOOP);
+		glVertex3f(x, y+dy, z+(w/2));
+		glVertex3f(x+dx, y-dy, z+w);
+		glVertex3f(x-dx, y-dy, z+w);
+	glEnd();
+
+	//Face 4 : Left
+	glBegin(GL_LINE_LOOP);
+		glVertex3f(x, y+dy, z+(w/2));
+		glVertex3f(x-dx, y-dy, z+w);
+		glVertex3f(x-dx, y-dy, z);
+	glEnd();
+
+	//Face 5 : Bottom
+	glBegin(GL_LINE_LOOP);
+		glVertex3f(x-dx, y-dy, z);
+		glVertex3f(x+dx, y-dy, z);
+		glVertex3f(x+dx, y-dy, z+w);
+		glVertex3f(x-dx, y-dy, -z+w);
+	glEnd();
+}
+
+void drawSphere(float r, float g, float b, float x, float y, float z, float radius, int type) {
+	GLUquadricObj* sphere = gluNewQuadric();
+	gluQuadricDrawStyle(sphere, type);
+	glColor3f(r, g, b);
+
+	glPushMatrix();
+	glTranslatef(x, y, z);
+	gluSphere(sphere, radius, 50, 50);
+	glPopMatrix();
+	gluDeleteQuadric(sphere);
+}
+
+void drawCylinder(float r, float g, float b, float x, float y, float z, float baseR, float topR, float height, int type) {
+	GLUquadricObj* cylinder = gluNewQuadric();
+	gluQuadricDrawStyle(cylinder, type);
+	glColor3f(r, g, b);
+
+	glPushMatrix();
+	glTranslatef(x, y, z);
+	gluCylinder(cylinder, baseR, topR, height, 50, 50);
+	glPopMatrix();
+	gluDeleteQuadric(cylinder);
+}
+
+void projection() {
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+
+	glRotatef(rX, 1.0, 0.0, 0.0);
+	glRotatef(rY, 0.0, 1.0, 0.0);
+
+	if (isOrtho) { //Orthographic
+		glOrtho(-8.0, 8.0, -8.0, 8.0, -8.0, 8.0);
+	}
+	else { //Perspective
+		gluPerspective(16.0, 1.0, -1.0, 1.0);
+		glFrustum(-8.0, 8.0, -8.0, 8.0, 1.0, 17.0);
+	}
+}
+
+void lighting() {
+	if (isLightOn) {
+		glEnable(GL_LIGHTING);
+	}
+	else {
+		glDisable(GL_LIGHTING);
+	}
+
+	//Light 0 
+	glLightfv(GL_LIGHT0, GL_AMBIENT, amb);
+	glLightfv(GL_LIGHT0, GL_POSITION, posA);
+	glEnable(GL_LIGHT0);
+
+	//Light 1
+	glLightfv(GL_LIGHT1, GL_DIFFUSE, dif);
+	glLightfv(GL_LIGHT1, GL_POSITION, posD);
+	glEnable(GL_LIGHT1);
+}
+
+GLuint skyBox(LPCSTR fileName) {
+	GLuint texture = 0;		//Texture name
+
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+
+	HBITMAP hBMP = (HBITMAP)LoadImage(GetModuleHandle(NULL),
+		fileName, IMAGE_BITMAP, 0, 0,
+		LR_CREATEDIBSECTION | LR_LOADFROMFILE);
+
+	GetObject(hBMP, sizeof(BMP), &BMP);
+
+	glEnable(GL_TEXTURE_2D);
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, BMP.bmWidth, BMP.bmHeight, 0, GL_BGR_EXT, GL_UNSIGNED_BYTE, BMP.bmBits);
+
+	DeleteObject(hBMP);
+
+	return texture;
+}
+
+void head() {
 	//Sphere
-	glColor3f(0.47, 0.471, 0.47);
-	gluSphere(sphere, 0.2, 200, 200);
+	//drawSphere(0.47, 0.471, 0.47, 0.0, 0.0, 0.0, 0.2, GL_LINE);
 
 	//Eye
 	glPushMatrix();
@@ -194,16 +395,113 @@ void Head() {
 
 }
 
+void body() {
+	//Frame
+	drawCuboid(1, 1, 1, 0, 4.8, 1, 1.7, 0.6, 1); 
+	drawCuboid(1, 1, 1, 0, 0.4, 1, 1.45, 0.6, 1); 
+	
+	glPushMatrix();
+	glTranslatef(-1.7, 3.5, 1);
+	glRotatef(-15, 0, 0, 1);
+	glTranslatef(1.7, -3.5, -1);
+	drawCuboid(1, 1, 1, -1.7, 3.5, 1, 0.5, 1.8, 1);
+	glPopMatrix();
+	
+	glPushMatrix();
+	glTranslatef(1.7, 3.5, 1);
+	glRotatef(15, 0, 0, 1);
+	glTranslatef(-1.7, -3.5, -1);
+	drawCuboid(1, 1, 1, 1.7, 3.5, 1, 0.5, 1.8, 1);
+	glPopMatrix();
+	
+	glPushMatrix();
+	glTranslatef(1.6, 1.1, 1);
+	glRotatef(-30, 0, 0, 1);
+	glTranslatef(-1.6, -1.1, -1);
+	drawCuboid(1, 1, 1, 1.6, 1.1, 1, 0.5, 1.2, 1);
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(-1.6, 1.1, 1);
+	glRotatef(30, 0, 0, 1);
+	glTranslatef(1.6, -1.1, -1);
+	drawCuboid(1, 1, 1, -1.6, 1.1, 1, 0.5, 1.2, 1);
+	glPopMatrix();
+
+	//Left Shoulder
+	glPushMatrix();
+	glTranslatef(-3.5, 4, -0.5);
+	glRotatef(-10, 0, 0, 1);
+	glTranslatef(3.5, -4, 0.5);
+	drawCuboid(1, 1, 1, -3.5, 4, 0, 2, 1.2, 1.5);
+	glPopMatrix();
+
+	//Right Shoulder
+	glPushMatrix();
+	glTranslatef(3.5, 4, -0.5);
+	glRotatef(10, 0, 0, 1);
+	glTranslatef(-3.5, -4, 0.5);
+	drawCuboid(1, 1, 1, 3.5, 4, 0, 2, 1.2, 1.5);
+	glPopMatrix();
+
+	//Rotating Orb
+	glPushMatrix();
+	glTranslatef(0, 2.5, 0.8);
+	glRotatef(speed, 1, 1, 1);
+	glTranslatef(-0, -2.5, -0.8);
+	drawSphere(1, 1, 1, 0, 2.5, 0.8, 1, GLU_LINE);
+	glPopMatrix();
+
+	//Bottom
+	glPushMatrix();
+	glTranslatef(-1.7, -1, 1);
+	glRotatef(-30, 0, 0, 1);
+	glTranslatef(1.7, 1, -1);
+	drawCuboid(1, 1, 1, -1.7, -1, 1, 0.5, 1.2, 0.5);
+	glPopMatrix();
+	
+	glPushMatrix();
+	glTranslatef(1.7, -1, 1);
+	glRotatef(30, 0, 0, 1);
+	glTranslatef(-1.7, 1, -1);
+	drawCuboid(1, 1, 1, 1.7, -1, 1, 0.5, 1.2, 0.5);
+	glPopMatrix();
+
+	drawCuboid(1, 1, 1, 0, -1.7, 1, 0.7, 1.5, 0.8);
+
+	//Back
+	//drawCuboid(1, 1, 1, 0, 1, -2, 2, 3.5, 3);
+
+}
+
 void display()
 {
 	glEnable(GL_DEPTH_TEST);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	glPushMatrix();
-	glRotatef(rotateX, 0.0, 1.0, 0.0);
-	glRotatef(rotateY, 1.0, 0.0, 0.0);
-	Head();
+	projection();
+	lighting();
 
+	//Sky box
+	/*GLuint skyTexture[1];
+	skyTexture[0] = skyBox("sky.bmp");
+	drawCuboid(1, 1, 1, 0, 0, -8, 8, 8, 8);
+	glDeleteTextures(1, &skyTexture[0]);*/
+
+	
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	glTranslatef(0, 0, tZ);
+	glMaterialfv(GL_FRONT, GL_AMBIENT, ambM);
+
+	speed += 0.1;
+	glPushMatrix();
+	//glScalef(5, 5, 5);
+	//head();
+	//drawCylinder(1, 1, 1, 0.3, -0.3, 4.0, 2, 2, 2, GLU_FILL);
+	//drawSphere(0, 1, 0, 0.0, 0.0, 0.0, 3, GLU_LINE);
+	//drawCuboid(1, 1, 1, 0, 0, 0, 4, 2, 2);
+	body();
 	glPopMatrix();
 }
 //--------------------------------------------------------------------
